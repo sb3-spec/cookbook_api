@@ -38,7 +38,7 @@ pub async fn start_web(web_folder: &str, web_port: u16, db: Arc<DatabaseConnecti
 
     // Combine all routes
     let routes = apis.or(static_site).with(cors).recover(handle_rejection);
-    println!("Starting web server at 127.0.0.1:8080");
+    println!("Starting web server at 0.0.0.0:{}", web_port);
     warp::serve(routes).run(([0, 0, 0, 0], web_port)).await;
 
 

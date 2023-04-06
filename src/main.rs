@@ -19,7 +19,11 @@ async fn main() {
     // compute the web_folder
     let mut args: Vec<String> = env::args().collect();
     let web_folder = DEFAULT_WEB_FOLDER.to_string(); //args.pop().unwrap_or_else(|| DEFAULT_WEB_FOLDER.to_string());
-    let web_port = DEFAULT_WEB_PORT;
+
+    let web_port: u16 = match env::var("PORT") {
+        Ok(port) => port.parse::<u16>().unwrap(),
+        Err(_) => DEFAULT_WEB_PORT
+    };
 
     // get the database
     // TODO - loop until valid DB
