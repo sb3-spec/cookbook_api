@@ -15,7 +15,7 @@ pub async fn init_db() -> Result<DatabaseConnection, super::Error> {
     
 
     // RESET DB dev only
-    if true {
+    if false {
 
         let root_db_url = dotenv!("ROOT_DATABASE_URL");
         let db = PgPoolOptions::new()
@@ -25,7 +25,7 @@ pub async fn init_db() -> Result<DatabaseConnection, super::Error> {
         db.close();
     }
 
-    let database_url = dotenv!("DATABASE_URL");
+    let database_url = dotenv!("PRODUCTION_DB_URL");
 
     let sqlx_db = PgPoolOptions::new()
         .connect(&database_url)

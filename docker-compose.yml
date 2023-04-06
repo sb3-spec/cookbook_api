@@ -1,0 +1,6 @@
+services:
+  backend:
+    image: rust:latest
+    command: 
+    ports:
+      - 8080:8080
