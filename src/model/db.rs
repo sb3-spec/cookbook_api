@@ -1,4 +1,4 @@
-use std::{fs, path::PathBuf};
+use std::{fs, path::PathBuf, env};
 use sqlx::{postgres::PgPoolOptions, Pool, Postgres};
 
 use sea_orm::{DatabaseConnection, Database};
@@ -10,22 +10,29 @@ const SQL_RECREATE: &str = "sql/00-recreate-db.sql";
 
 
 pub async fn init_db() -> Result<DatabaseConnection, super::Error> {
-    dotenv().ok();
+    dotenv().ok().expect("Error reading .env file");
 
     
 
     // RESET DB dev only
     if false {
+        let root_db_url = match env::var("ROOT_DATABASE_URL") {
+            Ok(url) => url,
+            Err(e) => "Error".to_owned(),
+        };
 
-        let root_db_url = dotenv!("ROOT_DATABASE_URL");
+        // let root_db_url = dotenv!("ROOT_DATABASE_URL");
         let db = PgPoolOptions::new()
             .connect(&root_db_url)
             .await?;
         pexec(&db, SQL_RECREATE).await?;
         db.close();
     }
-
-    let database_url = dotenv!("PRODUCTION_DB_URL");
+    
+    let database_url = match env::var("PRODUCTION_DB_URL") {
+        Ok(url) => url,
+        Err(e) => "Error".to_owned()
+    };
 
     let sqlx_db = PgPoolOptions::new()
         .connect(&database_url)
