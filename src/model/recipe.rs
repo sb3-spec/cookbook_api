@@ -24,7 +24,6 @@ pub struct RecipeMac;
 
 impl RecipeMac {
     pub async fn create(db: &DatabaseConnection, data: RecipePatch, utx: UserCtx) -> Result<recipe::Model, super::Error> {
-        println!("{}", utx.user_id);
         let recipe = recipe::ActiveModel {
             cid: Set(utx.user_id),
             title: Set(data.title.unwrap().into()),
