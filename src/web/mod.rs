@@ -23,7 +23,7 @@ pub async fn start_web(web_folder: &str, web_port: u16, db: Arc<DatabaseConnecti
     let cors = warp::cors()
         .allow_any_origin()
         .allow_headers(vec!["X-Auth-Token", "Content-Type", "content-type"])
-        .allow_methods(vec!["GET", "POST", "HEAD"]);
+        .allow_methods(vec!["GET", "POST", "HEAD", "DELETE"]);
 
     // Apis
     let apis = recipe_rest_filters("api", db.clone()).or(chef_rest_filters("api", db.clone()));

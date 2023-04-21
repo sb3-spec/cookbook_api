@@ -10,7 +10,9 @@ const SQL_RECREATE: &str = "sql/00-recreate-db.sql";
 
 
 pub async fn init_db() -> Result<DatabaseConnection, super::Error> {
-    // dotenv().ok().expect("Error reading .env file");
+    if true {
+        dotenv().ok().expect("Error reading .env file");
+    }
 
     
 
@@ -31,7 +33,7 @@ pub async fn init_db() -> Result<DatabaseConnection, super::Error> {
     
     let database_url = match env::var("PRODUCTION_DB_URL") {
         Ok(url) => url,
-        Err(e) => "Error".to_owned()
+        Err(e) => dotenv!("PRODUCTION_DB_URL").to_owned()
     };
 
     let sqlx_db = PgPoolOptions::new()
