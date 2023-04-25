@@ -33,7 +33,7 @@ pub async fn init_db() -> Result<DatabaseConnection, super::Error> {
     
     let database_url = match env::var("PRODUCTION_DB_URL") {
         Ok(url) => url,
-        Err(e) => dotenv!("PRODUCTION_DB_URL").to_owned()
+        Err(e) => "Error".to_owned(),
     };
 
     let sqlx_db = PgPoolOptions::new()
