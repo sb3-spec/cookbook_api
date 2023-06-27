@@ -4,11 +4,12 @@ use std::{sync::Arc, env};
 
 use model::init_db;
 use web::start_web;
-mod entities;
 
+mod entities;
 mod model;
 mod web;
 mod security;
+mod utils;
 
 const DEFAULT_WEB_FOLDER: &'static str = "web-folder/";
 const DEFAULT_WEB_PORT: u16 = 8080;
