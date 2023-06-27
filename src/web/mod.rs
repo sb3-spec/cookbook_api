@@ -3,7 +3,7 @@ use std::{sync::Arc, path::Path, convert::Infallible};
 use sea_orm::DatabaseConnection;
 
 use serde_json::json;
-use warp::{ Filter, Rejection, Reply };
+use warp::{ Filter, Rejection, Reply, reject::MethodNotAllowed };
 
 use crate::{model, security, web::chef::chef_rest_filters};
 
@@ -33,11 +33,12 @@ pub async fn start_web(web_folder: &str, web_port: u16, db: Arc<DatabaseConnecti
 
     let root_index = warp::get()
         .and(warp::path::end())
-        .and(warp::fs::file(format!("{}/index.html", web_folder)));
-    let static_site = content.or(root_index);
+        .and(warp::fs::file(format!("{}index.html", web_folder)));
+    
+    let static_site = root_index.or(content);
 
     // Combine all routes
-    let routes = apis.or(static_site).with(cors).recover(handle_rejection);
+    let routes = static_site.or(apis).with(cors).recover(handle_rejection);
     println!("Starting web server at 0.0.0.0:{}", web_port);
     warp::serve(routes).run(([0, 0, 0, 0], web_port)).await;
 
@@ -51,14 +52,17 @@ async fn handle_rejection(err: Rejection) -> Result<impl Reply, Infallible> {
 
     // TODO - Call log api for capture and store
 
+    if (err.is_not_found()) {
+        println!("Ignore error if at root of api");
+    }
 
     // Build user message
     let user_message = match err.find::<WebErrorMessage>() {
         Some(err) => err.typ.to_string(),
-        None => "Unknown".to_string()
+        None => "Unhandled rejection".to_string()
     };
 
-    let result = json!({ "errorMessage": user_message });
+    let result = json!({ "error": user_message });
     let result = warp::reply::json(&result);
     
     Ok(warp::reply::with_status(result, warp::http::StatusCode::BAD_REQUEST))
@@ -91,19 +95,19 @@ impl WebErrorMessage {
 
 impl From<self::Error> for warp::Rejection {
     fn from(other: self::Error) -> Self {
-        WebErrorMessage::rejection("web::Error", format!("{}", other))
+        WebErrorMessage::rejection("web::Error", format!("{:?}", other))
     }
 }
 
 impl From<model::Error> for warp::Rejection {
     fn from(other: model::Error) -> Self {
-        WebErrorMessage::rejection("web::Error", format!("{}", other))
+        WebErrorMessage::rejection("web::Error", format!("{:?}", other))
     }
 }
 
 impl From<security::Error> for warp::Rejection {
     fn from(other: security::Error) -> Self {
-        WebErrorMessage::rejection("web::Error", format!("{}", other))
+        WebErrorMessage::rejection("web::Error", format!("{:?}", other))
     }
 }
 // endregion: Warp Custom Error

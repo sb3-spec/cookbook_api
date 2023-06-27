@@ -10,6 +10,10 @@ sea-orm = { version = "0.11.1", features = [ "runtime-tokio-rustls", "postgres-a
 thiserror = "1.0.39"
 tokio = { version = "1.26.0", features = ["full"] }
 warp = "0.3.3"
+reqwest = {version = "0.11", features = ["blocking"]}
+scraper = "0.16.0"
+regex = "1"
+
 
 # JSON libs
 serde = "1.0"
