@@ -10,7 +10,7 @@ const SQL_RECREATE: &str = "sql/00-recreate-db.sql";
 
 
 pub async fn init_db() -> Result<DatabaseConnection, super::Error> {
-    if true {
+    if false {
         dotenv().ok().expect("Error reading .env file");
     }
 
