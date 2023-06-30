@@ -55,6 +55,10 @@ impl RecipeMac {
         recipe.title = Set(data.title.unwrap_or_else(|| recipe.title.unwrap()));
         recipe.mid = Set(Some(utx.user_id));
         recipe.header = Set(Some(data.header.unwrap_or_else(|| recipe.header.unwrap().unwrap())));
+        recipe.ingredients = Set(Some(data.ingredients.unwrap_or_else(|| recipe.ingredients.unwrap().unwrap())));
+        recipe.steps = Set(Some(data.steps.unwrap_or_else(|| recipe.steps.unwrap().unwrap())));
+        recipe.tags = Set(Some(data.tags.unwrap_or_else(|| recipe.tags.unwrap().unwrap())));
+
 
         let recipe: recipe::Model = recipe.update(db).await?;
 
