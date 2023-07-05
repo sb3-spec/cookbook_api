@@ -142,7 +142,7 @@ async fn scrape_recipe(encoded_url: String) -> Result<Json, warp::Rejection> {
             },
             Some("og:image") => {
                 if !element_content.is_empty() {
-                    recipe_data["image"] = element_content.into();
+                    recipe_data["image_url"] = element_content.into();
                 }
             },
             Some("og:image:height") => {
