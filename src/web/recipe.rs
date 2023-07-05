@@ -210,16 +210,43 @@ async fn scrape_recipe(encoded_url: String) -> Result<Json, warp::Rejection> {
                     }
 
                     let unwrapped_el = el.unwrap();
+                    let unwrapped_el_name = unwrapped_el.value().name();
 
                     let html_regex = Regex::new(r"<[^>]*>").unwrap();
 
-                    if unwrapped_el.value().name() == "ul" || unwrapped_el.value().name() == "ol" {
+                    if unwrapped_el_name == "ul" || unwrapped_el_name == "ol" && class.to_lowercase().contains("instruction") {
                         step_list = unwrapped_el.children().filter(|child| ElementRef::wrap(*child).is_some()).map(|child| 
                             ElementRef::wrap(child).unwrap())
                             .filter(|child| child.value().name() == "li").map(|child| 
                             html_regex.replace(from_utf8(child.text().collect::<Vec<_>>().join("").replace("\n", "").as_bytes()).unwrap().into(), "").to_string()).collect::<Vec<String>>();
                     }
+
+
+
                     
+                }
+            }
+
+            if class.to_lowercase().contains("ingredient") {
+                for child in element.children() {
+                    
+                    let mut el = ElementRef::wrap(child.clone());;
+
+                    if (el.is_none()) {
+                        continue;
+                    }
+
+                    let unwrapped_el = el.unwrap();
+                    let unwrapped_el_name = unwrapped_el.value().name();
+
+                    let html_regex = Regex::new(r"<[^>]*>").unwrap();
+
+                    if unwrapped_el_name == "ul" || unwrapped_el_name == "ol" {
+                        ingredient_list = unwrapped_el.children().filter(|child| ElementRef::wrap(*child).is_some()).map(|child| 
+                            ElementRef::wrap(child).unwrap())
+                            .filter(|child| child.value().name() == "li").map(|child| 
+                            html_regex.replace(from_utf8(child.text().collect::<Vec<_>>().join("").replace("\t", "").as_bytes()).unwrap().into(), "").to_string()).collect::<Vec<String>>();
+                    }  
                 }
             }
         }
