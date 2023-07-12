@@ -8,7 +8,8 @@ use sea_orm::prelude::*;
 #[derive(Default, Clone, Serialize, Deserialize)]
 pub struct ChefPatch {
     pub username: Option<String>,
-    pub firebase_id: Option<String>
+    pub firebase_id: Option<String>,
+    pub custom_tags: Option<Vec<String>>,
 }
 
 pub struct ChefMac;
@@ -60,13 +61,14 @@ impl ChefMac {
             .one(db)
             .await?;
 
-        if chef.is_some() {
-            return Err(super::Error::EntityAlreadyExists)
-        } 
+        if let Some(chef_body) = chef {
+            return Ok(chef_body)
+        }
 
         let chef = chef::ActiveModel {
             username: Set(Some(data.username.unwrap_or_default())),
             firebase_id: Set(data.firebase_id.unwrap()),
+            custom_tags: Set(Some(Vec::new())),
             ..Default::default()
         };
 

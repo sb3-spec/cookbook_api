@@ -6,7 +6,7 @@ use serde_json::json;
 use warp::{Filter, reply::Json};
 
 use crate::{security::UserCtx, entities::{chef, recipe}, model::{ChefMac, ChefPatch}};
-use crate::entities::prelude::{ Chef};
+use crate::entities::prelude::Chef;
 
 use super::{filter_utils::with_db, filter_auth::do_auth};
 

@@ -12,6 +12,8 @@ async fn model_recipe_create_ok() -> Result<(), Box<dyn std::error::Error>> {
         tags: Some(vec!["Nast".to_string()]),
         image_url: Some("".to_string()),
         cook_time: Some("".to_string()),
+        prep_time: Some("".to_string()),
+        total_time: Some("".to_string()),
     };
     let utx = utx_from_token(&db, "firebase_auth_123").await?;
 
@@ -75,7 +77,9 @@ async fn model_recipe_update() -> Result<(), Box<dyn std::error::Error>> {
         ingredients: Some(vec!["Baby's Boy".to_string(), "Baby's Joy".to_string()]),
         tags: Some(vec!["Nast".to_string()]),
         image_url: Some("".to_string()),
-        cook_time: Some("3 hours".to_string())
+        cook_time: Some("3 hours".to_string()),
+        prep_time: Some("".to_string()),
+        total_time: Some("".to_string()),
     };
     let utx = utx_from_token(&db, "firebase_auth_123").await?;
 

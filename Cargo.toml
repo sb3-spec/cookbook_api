@@ -11,8 +11,9 @@ thiserror = "1.0.39"
 tokio = { version = "1.26.0", features = ["full"] }
 warp = "0.3.3"
 reqwest = {version = "0.11", features = ["blocking"]}
-scraper = "0.16.0"
+scraper = "0.17.1"
 regex = "1"
+color-eyre = "0.6.2"
 
 
 # JSON libs
@@ -21,7 +22,7 @@ serde_json = "1.0"
 serde_derive = "1.0"
 
 #DB libs
-sqlx = { version = "0.6.2", features = [ "runtime-tokio-rustls", "postgres"] }
+sqlx = { version = "0.7.0", features = [ "runtime-tokio-rustls", "postgres"] }
 urlencoding = "2.1.2"
 anyhow = "1"
 dotenvy = "0.15.6"
@@ -29,3 +30,4 @@ dotenvy_macro = "0.15.1"
 
 [dev-dependencies]
 anyhow = "1"
+

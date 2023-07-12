@@ -31,6 +31,7 @@ async fn model_chef_create_ok() -> Result<(), Box<dyn std::error::Error>> {
     let data_fx = ChefPatch {
         username: Some("Scary Mary!".to_string()),
         firebase_id: Some("firebase_auth_1234".to_owned()),
+        custom_tags: Some(Vec::new()),
     };
 
     // -- ACTION
@@ -83,6 +84,7 @@ async fn model_chef_update_ok() -> Result<(), Box<dyn std::error::Error>> {
     let data_fx = ChefPatch {
         username: Some("Scary Mary!".to_string()),
         firebase_id: Some("firebase_auth_1234".to_owned()),
+        custom_tags: Some(Vec::new()),
     };
 
     let new_chef = ChefMac::create(&db, data_fx).await?;
@@ -111,6 +113,7 @@ async fn model_chef_delete() -> Result<(), Box<dyn std::error::Error>> {
     let data_fx = ChefPatch {
         username: Some("Scary Mary!".to_string()),
         firebase_id: Some("firebase_auth_1234".to_owned()),
+        custom_tags: Some(Vec::new()),
     };
 
     let new_chef = ChefMac::create(&db, data_fx).await?;

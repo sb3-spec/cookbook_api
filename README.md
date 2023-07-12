@@ -13,3 +13,6 @@ cargo watch -q -c -w src/ -x 'test web_ -- --test-threads=1 --nocapture'
 cargo watch -q -c -w src/ -x 'run -- web-folder'
 ```
 
+# Generate entity files of database `bakery` to `entity/src`
+
+

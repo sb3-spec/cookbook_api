@@ -15,7 +15,9 @@ pub struct RecipePatch {
     pub ingredients: Option<Vec<String>>,
     pub tags: Option<Vec<String>>,
     pub image_url: Option<String>,
-    pub cook_time: Option<String>
+    pub cook_time: Option<String>,
+    pub prep_time: Option<String>,
+    pub total_time: Option<String>,
 }
 
 
@@ -33,6 +35,8 @@ impl RecipeMac {
             tags: Set(Some(data.tags.unwrap_or_default())),
             image_url: Set(Some(data.image_url.unwrap_or_default())),
             cook_time: Set(Some(data.cook_time.unwrap_or_default())),
+            prep_time: Set(Some(data.prep_time.unwrap_or_default())),
+            total_time: Set(Some(data.total_time.unwrap_or_default())),
             ..Default::default()
         }; 
 
@@ -58,6 +62,9 @@ impl RecipeMac {
         recipe.ingredients = Set(Some(data.ingredients.unwrap_or_else(|| recipe.ingredients.unwrap().unwrap())));
         recipe.steps = Set(Some(data.steps.unwrap_or_else(|| recipe.steps.unwrap().unwrap())));
         recipe.tags = Set(Some(data.tags.unwrap_or_else(|| recipe.tags.unwrap().unwrap())));
+        recipe.cook_time = Set(Some(data.cook_time.unwrap_or_else(|| recipe.cook_time.unwrap().unwrap())));
+        recipe.prep_time = Set(Some(data.prep_time.unwrap_or_else(|| recipe.prep_time.unwrap().unwrap())));
+        recipe.total_time = Set(Some(data.total_time.unwrap_or_else(|| recipe.total_time.unwrap().unwrap())));
 
 
         let recipe: recipe::Model = recipe.update(db).await?;
