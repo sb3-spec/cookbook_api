@@ -28,5 +28,5 @@ CREATE TABLE recipe (
         REFERENCES chef(firebase_id)
 );
 
--- ALTER SEQUENCE recipe_id_seq RESTART WITH 4;
+ALTER SEQUENCE recipe_id_seq RESTART WITH 4;
 -- ALTER SEQUENCE chef_id_seq RESTART WITH 2;

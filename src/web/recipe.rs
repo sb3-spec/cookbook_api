@@ -138,7 +138,7 @@ async fn scrape_recipe(encoded_url: String) -> Result<Json, warp::Rejection> {
             },
             Some("og:description") => {
                 if !element_content.is_empty() {
-                    recipe_data["description"] = element_content.into();
+                    recipe_data["header"] = element_content.into();
                 }   
             },
             Some("og:image") => {
@@ -210,10 +210,18 @@ async fn scrape_recipe(encoded_url: String) -> Result<Json, warp::Rejection> {
                     let html_regex = Regex::new(r"<[^>]*>").unwrap();
 
                     if unwrapped_el_name == "ul" || unwrapped_el_name == "ol" {
-                        ingredient_list = unwrapped_el.children().filter(|child| ElementRef::wrap(*child).is_some()).map(|child| 
-                            ElementRef::wrap(child).unwrap())
-                            .filter(|child| child.value().name() == "li").map(|child| 
-                            html_regex.replace(from_utf8(child.text().collect::<Vec<_>>().join("").replace("\t", "").as_bytes()).unwrap().into(), "").to_string()).collect::<Vec<String>>();
+                        ingredient_list = unwrapped_el.children().filter(|child| ElementRef::wrap(*child)
+                            .is_some())
+                            .map(|child| ElementRef::wrap(child).unwrap())
+                            .filter(|child| child.value().name() == "li")
+                            .map(|child| html_regex.replace(from_utf8(child.text().collect::<Vec<_>>().join("")
+                                .replace("\t", "")
+                                .as_bytes())
+                                .unwrap().into(), "")
+                                .to_string()
+                                .chars()
+                                .filter(|c| c.is_ascii()).collect::<String>())
+                            .collect::<Vec<String>>();
                     }  
                 }
             }
