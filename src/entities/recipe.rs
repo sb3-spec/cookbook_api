@@ -25,6 +25,10 @@ pub struct Model {
     pub image_url: Option<String>,
     #[sea_orm(column_type = "Text", nullable)]
     pub cook_time: Option<String>,
+    #[sea_orm(column_type = "Text", nullable)]
+    pub prep_time: Option<String>,
+    #[sea_orm(column_type = "Text", nullable)]
+    pub total_time: Option<String>,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

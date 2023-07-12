@@ -47,15 +47,21 @@ pub async fn init_db() -> Result<DatabaseConnection, super::Error> {
         .collect();
     paths.sort();
 
-    // Execute each file
-    for path in paths {
-        if let Some(path) = path.to_str() {
-            // only .sql and not the recreate
-            if path.ends_with(".sql") && path != SQL_RECREATE {
-                pexec(&sqlx_db, &path).await?;
+    
+    // Running this code in prod wont cause any real problems, but it will throw errors
+    if false {
+        // Execute each file
+        for path in paths {
+            if let Some(path) = path.to_str() {
+                // only .sql and not the recreate
+                if path.ends_with(".sql") && path != SQL_RECREATE {
+                    pexec(&sqlx_db, &path).await?;
+                }
             }
         }
+
     }
+
 
     let db: DatabaseConnection = Database::connect(database_url).await?;
 

@@ -13,6 +13,7 @@ mod recipe;
 mod chef;
 mod filter_utils;
 mod filter_auth;
+mod scrape_utils;
 
 pub async fn start_web(web_folder: &str, web_port: u16, db: Arc<DatabaseConnection>) -> Result<(), Error> {
     // validate web_folder
@@ -21,7 +22,7 @@ pub async fn start_web(web_folder: &str, web_port: u16, db: Arc<DatabaseConnecti
     }
 
     let cors = warp::cors()
-        .allow_any_origin()
+        .allow_origins(["http://localhost:8080", "http://localhost:5173"])
         .allow_headers(vec!["X-Auth-Token", "Content-Type", "content-type"])
         .allow_methods(vec!["GET", "POST", "HEAD", "DELETE", "PATCH"]);
 
@@ -46,16 +47,22 @@ pub async fn start_web(web_folder: &str, web_port: u16, db: Arc<DatabaseConnecti
     Ok(())
 }
 
+
 async fn handle_rejection(err: Rejection) -> Result<impl Reply, Infallible> {
+    let code;
+    let message;
+
+    if err.is_not_found() {
+        code = 404;
+        message = "NOT FOUND";
+    } else if let Some(e) = err.find::<WebErrorMessage>() {
+        code = warp::http::StatusCode::BAD_REQUEST.into();
+        message = &e.message;
+    };
     // Print to server side
     println!("Error - {:?}", err);
 
     // TODO - Call log api for capture and store
-
-    if (err.is_not_found()) {
-        println!("Ignore error if at root of api");
-    }
-
     // Build user message
     let user_message = match err.find::<WebErrorMessage>() {
         Some(err) => err.typ.to_string(),
@@ -67,6 +74,8 @@ async fn handle_rejection(err: Rejection) -> Result<impl Reply, Infallible> {
     
     Ok(warp::reply::with_status(result, warp::http::StatusCode::BAD_REQUEST))
 }
+
+
 
 #[derive(thiserror::Error, Debug)]
 pub enum Error {

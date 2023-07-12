@@ -1,4 +1,4 @@
-use std::{sync::Arc, ops::Deref, str::from_utf8};
+use std::{sync::Arc, ops::Deref, str::from_utf8, collections::HashSet};
 
 use sea_orm::DatabaseConnection;
 use serde::Serialize;
@@ -10,7 +10,7 @@ use regex::Regex;
 
 use crate::{model::{RecipeMac, RecipePatch}, security::UserCtx, entities::recipe};
 
-use super::{filter_utils::with_db, filter_auth::do_auth};
+use super::{filter_utils::with_db, filter_auth::do_auth, scrape_utils::scrape_recipe_time};
 
 pub fn recipe_rest_filters(
     base_path: &'static str,
@@ -117,6 +117,7 @@ async fn scrape_recipe(encoded_url: String) -> Result<Json, warp::Rejection> {
     let list_selector = Selector::parse("ol").unwrap();
     let header_selector = Selector::parse("h2").unwrap();
     let div_selector = Selector::parse("div").unwrap();
+    let span_selector = Selector::parse("span").unwrap();
 
     let mut recipe_data = json!({
         "ingredients": [],
@@ -159,46 +160,14 @@ async fn scrape_recipe(encoded_url: String) -> Result<Json, warp::Rejection> {
         }
     }
 
-    // GET THE INGREDIENTS!!!
     let mut ingredient_list: Vec<String> = Vec::new();
     let mut step_list: Vec<String> = Vec::new();
 
-    // This part mostly scrapes ingredient info
-    // APPROACH 1 
-    for element in html.select(&li_selector) {
-        for class in element.value().classes() {
-            if class.to_lowercase().contains("ingredient") {
-                // Grabs all the text from the element
-                let ingredient_string = element.text().collect::<Vec<_>>().join("");
-                let parsed_string = ingredient_string.replace("\n", "").into_bytes();
-                ingredient_list.push(from_utf8(&parsed_string).unwrap().into());
-            } else if class.to_lowercase().contains("instruction") | class.contains("step") {
-                let step_string_list = element.text().collect::<Vec<_>>().join("");
-                step_list.push(step_string_list);
-            }           
-        } 
-    }
 
-    
-    // Approach 2
-    for element in html.select(&list_selector) {
-        
-        for class in element.value().classes() {
-            if class.to_lowercase().contains("ingredient") {
-                ingredient_list = element.children().map(|child| 
-                    ElementRef::wrap(child).unwrap()).filter(|child| child.value().name() == "li").map(|child| 
-                    child.text().collect::<Vec<_>>().join("").chars().filter(|c| c.is_alphanumeric()).collect::<String>()).collect::<Vec<String>>();
-            } else if class.to_lowercase().contains("step") | class.to_lowercase().contains("instructions") {
-                step_list = element.children().map(|child| 
-                    ElementRef::wrap(child).unwrap()).filter(|child| child.value().name() == "li").map(|child| 
-                    child.text().collect::<Vec<_>>().join("")).collect::<Vec<String>>();
-            }
-        }
-    }
-
-    // Approach 3
+    // Grabbing steps and ingredients
     for element in html.select(&div_selector) {
         for class in element.value().classes() {
+            // Looks through the children of the element if it (element) has a class that contains the string instruction
             if class.to_lowercase().contains("step") | class.to_lowercase().contains("instruction") {
                 for child in element.children() {
 
@@ -220,12 +189,11 @@ async fn scrape_recipe(encoded_url: String) -> Result<Json, warp::Rejection> {
                             .filter(|child| child.value().name() == "li").map(|child| 
                             html_regex.replace(from_utf8(child.text().collect::<Vec<_>>().join("").replace("\n", "").as_bytes()).unwrap().into(), "").to_string()).collect::<Vec<String>>();
                     }
-
-
-
                     
                 }
             }
+
+            // Grabbing the ingredients
 
             if class.to_lowercase().contains("ingredient") {
                 for child in element.children() {
@@ -247,6 +215,20 @@ async fn scrape_recipe(encoded_url: String) -> Result<Json, warp::Rejection> {
                             .filter(|child| child.value().name() == "li").map(|child| 
                             html_regex.replace(from_utf8(child.text().collect::<Vec<_>>().join("").replace("\t", "").as_bytes()).unwrap().into(), "").to_string()).collect::<Vec<String>>();
                     }  
+                }
+            }
+        }
+    }
+
+    // Grabbing cook, prep, and total time values by searching all span elements
+    for element in html.select(&span_selector) {
+        let time_types = ["prep", "cook", "total"];
+
+        for typ in time_types {
+            if element.text().collect::<Vec<_>>().join("").to_ascii_lowercase().contains(typ) {
+
+                if let Some(time) = scrape_recipe_time(element) {
+                    recipe_data[format!("{}_time", typ)] = time.into();
                 }
             }
         }
