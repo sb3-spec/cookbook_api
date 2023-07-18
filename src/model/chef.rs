@@ -62,7 +62,7 @@ impl ChefMac {
             .await?;
 
         if let Some(chef_body) = chef {
-            return Ok(chef_body)
+            return Err(super::Error::EntityAlreadyExists)
         }
 
         let chef = chef::ActiveModel {

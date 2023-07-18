@@ -4,7 +4,7 @@ mod db;
 mod recipe;
 mod chef;
 
-pub use db::{init_db};
+pub use db::init_db;
 pub use recipe::{ RecipeMac, RecipePatch };
 pub use chef::{ ChefMac, ChefPatch };
 
