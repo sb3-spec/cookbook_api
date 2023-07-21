@@ -4,7 +4,7 @@ mod db;
 mod recipe;
 mod chef;
 
-pub use db::{init_db};
+pub use db::init_db;
 pub use recipe::{ RecipeMac, RecipePatch };
 pub use chef::{ ChefMac, ChefPatch };
 
@@ -12,7 +12,6 @@ pub use chef::{ ChefMac, ChefPatch };
 pub enum Error {
     #[error("Entity with same firebase id already exists")]
     EntityAlreadyExists,
-
 
     #[error("Entity Not Found - {0}")]
     EntityNotFound(String),

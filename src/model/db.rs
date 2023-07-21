@@ -1,20 +1,17 @@
-use std::{fs, path::PathBuf, env};
 use sqlx::{postgres::PgPoolOptions, Pool, Postgres};
+use std::{env, fs, path::PathBuf};
 
-use sea_orm::{DatabaseConnection, Database};
 use dotenvy::dotenv;
 use dotenvy_macro::dotenv;
+use sea_orm::{Database, DatabaseConnection};
 
 const SQL_DIR: &str = "sql/";
 const SQL_RECREATE: &str = "sql/00-recreate-db.sql";
-
 
 pub async fn init_db() -> Result<DatabaseConnection, super::Error> {
     if false {
         dotenv().ok().expect("Error reading .env file");
     }
-
-    
 
     // RESET DB dev only
     if false {
@@ -24,21 +21,17 @@ pub async fn init_db() -> Result<DatabaseConnection, super::Error> {
         };
 
         // let root_db_url = dotenv!("ROOT_DATABASE_URL");
-        let db = PgPoolOptions::new()
-            .connect(&root_db_url)
-            .await?;
+        let db = PgPoolOptions::new().connect(&root_db_url).await?;
         pexec(&db, SQL_RECREATE).await?;
         db.close();
     }
-    
+
     let database_url = match env::var("PRODUCTION_DB_URL") {
         Ok(url) => url,
         Err(e) => "Error".to_owned(),
     };
 
-    let sqlx_db = PgPoolOptions::new()
-        .connect(&database_url)
-        .await?;
+    let sqlx_db = PgPoolOptions::new().connect(&database_url).await?;
 
     // -- Run the app sql files
     let mut paths: Vec<PathBuf> = fs::read_dir(SQL_DIR)?
@@ -47,7 +40,6 @@ pub async fn init_db() -> Result<DatabaseConnection, super::Error> {
         .collect();
     paths.sort();
 
-    
     // Running this code in prod wont cause any real problems, but it will throw errors
     if false {
         // Execute each file
@@ -59,9 +51,7 @@ pub async fn init_db() -> Result<DatabaseConnection, super::Error> {
                 }
             }
         }
-
     }
-
 
     let db: DatabaseConnection = Database::connect(database_url).await?;
 
@@ -80,7 +70,7 @@ async fn pexec(db: &Pool<Postgres>, file: &str) -> Result<(), sqlx::Error> {
     for sql in sqls {
         match sqlx::query(&sql).execute(db).await {
             Ok(_) => (),
-            Err(ex) => println!("WARNING - pexec - Sql file '{}' FAILED cause: {}", file, ex)
+            Err(ex) => println!("WARNING - pexec - Sql file '{}' FAILED cause: {}", file, ex),
         }
     }
 
