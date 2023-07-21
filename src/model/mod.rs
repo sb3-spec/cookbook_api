@@ -13,7 +13,6 @@ pub enum Error {
     #[error("Entity with same firebase id already exists")]
     EntityAlreadyExists,
 
-
     #[error("Entity Not Found - {0}")]
     EntityNotFound(String),
 

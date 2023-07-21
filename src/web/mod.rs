@@ -49,7 +49,7 @@ pub async fn start_web(web_folder: &str, web_port: u16, db: Arc<DatabaseConnecti
 
 
 async fn handle_rejection(err: Rejection) -> Result<impl Reply, Infallible> {
-    let code;
+    let mut code= 405;
     let message;
 
     if err.is_not_found() {
@@ -58,6 +58,8 @@ async fn handle_rejection(err: Rejection) -> Result<impl Reply, Infallible> {
     } else if let Some(e) = err.find::<WebErrorMessage>() {
         code = warp::http::StatusCode::BAD_REQUEST.into();
         message = &e.message;
+    } else {
+        message = "Unable to parse error"
     };
     // Print to server side
     println!("Error - {:?}", err);
