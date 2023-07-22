@@ -1,7 +1,7 @@
 use sea_orm::{DatabaseConnection, ModelTrait, Set};
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
-use crate::entities::{ chef, prelude::*, recipe};
+use crate::entities::{chef, prelude::*, recipe};
 
 use sea_orm::prelude::*;
 
@@ -14,19 +14,24 @@ pub struct ChefPatch {
 
 pub struct ChefMac;
 
-
 impl ChefMac {
-    pub async fn get(db: &DatabaseConnection, firebase_id: String) -> Result<chef::Model, super::Error> {
+    pub async fn get(
+        db: &DatabaseConnection,
+        firebase_id: String,
+    ) -> Result<chef::Model, super::Error> {
         // let chef: Option<chef::Model> = Chef::find_by_id(id).one(db).await?;
-        let chef: Option<chef::Model> = Chef::find().filter(chef::Column::FirebaseId.eq(&firebase_id)).one(db).await?;
+        let chef: Option<chef::Model> = Chef::find()
+            .filter(chef::Column::FirebaseId.eq(&firebase_id))
+            .one(db)
+            .await?;
 
         if chef.is_none() {
-            return Err(super::Error::EntityNotFound(firebase_id))
+            return Err(super::Error::EntityNotFound(firebase_id));
         }
 
         let chef = chef.unwrap();
 
-        Ok(chef)    
+        Ok(chef)
     }
 
     pub async fn delete(db: &DatabaseConnection, id: String) -> Result<String, super::Error> {
@@ -43,18 +48,28 @@ impl ChefMac {
         Ok(chefs)
     }
 
-    pub async fn update(db: &DatabaseConnection, data: ChefPatch, id: String) -> Result<chef::Model, super::Error> {
+    pub async fn update(
+        db: &DatabaseConnection,
+        data: ChefPatch,
+        id: String,
+    ) -> Result<chef::Model, super::Error> {
         let chef: chef::Model = ChefMac::get(db, id).await?;
         let mut chef: chef::ActiveModel = chef.into();
 
-        chef.username = Set(Some(data.username.unwrap_or_else(|| chef.username.unwrap().unwrap())));
+        chef.username = Set(Some(
+            data.username
+                .unwrap_or_else(|| chef.username.unwrap().unwrap()),
+        ));
 
         let chef: chef::Model = chef.update(db).await?;
 
         Ok(chef)
     }
 
-    pub async fn create(db: &DatabaseConnection, data: ChefPatch) -> Result<chef::Model, super::Error> {
+    pub async fn create(
+        db: &DatabaseConnection,
+        data: ChefPatch,
+    ) -> Result<chef::Model, super::Error> {
         let target_firebase_id = data.firebase_id.clone();
         let chef: Option<chef::Model> = Chef::find()
             .filter(chef::Column::FirebaseId.eq(target_firebase_id.unwrap()))
@@ -62,14 +77,13 @@ impl ChefMac {
             .await?;
 
         if let Some(chef_body) = chef {
-            return Err(super::Error::EntityAlreadyExists)
+            return Err(super::Error::EntityAlreadyExists);
         }
 
         let chef = chef::ActiveModel {
             username: Set(Some(data.username.unwrap_or_default())),
             firebase_id: Set(data.firebase_id.unwrap()),
             custom_tags: Set(Some(Vec::new())),
-            ..Default::default()
         };
 
         let chef: chef::Model = chef.insert(db).await?;
@@ -77,14 +91,15 @@ impl ChefMac {
         Ok(chef)
     }
 
-    pub async fn get_recipes(db: &DatabaseConnection, firebase_id: String) -> Result<Vec<recipe::Model>, super::Error> {
-
+    pub async fn get_recipes(
+        db: &DatabaseConnection,
+        firebase_id: String,
+    ) -> Result<Vec<recipe::Model>, super::Error> {
         let chef: chef::Model = ChefMac::get(db, firebase_id).await?;
 
         let recipes: Vec<recipe::Model> = chef.find_related(Recipe).all(db).await?;
         Ok(recipes)
     }
-
 }
 
 #[cfg(test)]

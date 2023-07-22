@@ -1,28 +1,35 @@
-use std::{sync::Arc, path::Path, convert::Infallible};
+use std::{convert::Infallible, path::Path, sync::Arc};
 
 use sea_orm::DatabaseConnection;
 
 use serde_json::json;
-use warp::{ Filter, Rejection, Reply, reject::MethodNotAllowed };
+use warp::{reject::MethodNotAllowed, Filter, Rejection, Reply};
 
 use crate::{model, security, web::chef::chef_rest_filters};
 
 use self::recipe::recipe_rest_filters;
 
-mod recipe;
 mod chef;
-mod filter_utils;
 mod filter_auth;
-mod scrape_utils;
+mod filter_utils;
+mod recipe;
 
-pub async fn start_web(web_folder: &str, web_port: u16, db: Arc<DatabaseConnection>) -> Result<(), Error> {
+pub async fn start_web(
+    web_folder: &str,
+    web_port: u16,
+    db: Arc<DatabaseConnection>,
+) -> Result<(), Error> {
     // validate web_folder
     if !Path::new(web_folder).exists() {
-        return Err(Error::FailStartWebFolderNotFound(web_folder.to_string()))
+        return Err(Error::FailStartWebFolderNotFound(web_folder.to_string()));
     }
 
     let cors = warp::cors()
-        .allow_origins(["http://localhost:8080", "http://localhost:5173"])
+        .allow_origins([
+            "http://localhost:8080",
+            "http://localhost:5173",
+            "https://digital-parsley.netlify.app",
+        ])
         .allow_headers(vec!["X-Auth-Token", "Content-Type", "content-type"])
         .allow_methods(vec!["GET", "POST", "HEAD", "DELETE", "PATCH"]);
 
@@ -35,7 +42,7 @@ pub async fn start_web(web_folder: &str, web_port: u16, db: Arc<DatabaseConnecti
     let root_index = warp::get()
         .and(warp::path::end())
         .and(warp::fs::file(format!("{}index.html", web_folder)));
-    
+
     let static_site = root_index.or(content);
 
     // Combine all routes
@@ -43,13 +50,11 @@ pub async fn start_web(web_folder: &str, web_port: u16, db: Arc<DatabaseConnecti
     println!("Starting web server at 0.0.0.0:{}", web_port);
     warp::serve(routes).run(([0, 0, 0, 0], web_port)).await;
 
-
     Ok(())
 }
 
-
 async fn handle_rejection(err: Rejection) -> Result<impl Reply, Infallible> {
-    let mut code= 405;
+    let mut code = 405;
     let message;
 
     if err.is_not_found() {
@@ -68,16 +73,17 @@ async fn handle_rejection(err: Rejection) -> Result<impl Reply, Infallible> {
     // Build user message
     let user_message = match err.find::<WebErrorMessage>() {
         Some(err) => err.typ.to_string(),
-        None => "Unhandled rejection".to_string()
+        None => "Unhandled rejection".to_string(),
     };
 
     let result = json!({ "error": user_message });
     let result = warp::reply::json(&result);
-    
-    Ok(warp::reply::with_status(result, warp::http::StatusCode::BAD_REQUEST))
+
+    Ok(warp::reply::with_status(
+        result,
+        warp::http::StatusCode::BAD_REQUEST,
+    ))
 }
-
-
 
 #[derive(thiserror::Error, Debug)]
 pub enum Error {
@@ -88,12 +94,11 @@ pub enum Error {
     FailAuthMissingXAuth,
 }
 
-
 // region: Warp Custom Error
 #[derive(Debug)]
 pub struct WebErrorMessage {
     pub typ: &'static str,
-    pub message: String
+    pub message: String,
 }
 
 impl warp::reject::Reject for WebErrorMessage {}
@@ -122,5 +127,3 @@ impl From<security::Error> for warp::Rejection {
     }
 }
 // endregion: Warp Custom Error
-
-

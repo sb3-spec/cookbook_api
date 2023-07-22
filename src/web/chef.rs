@@ -19,19 +19,19 @@ pub fn chef_rest_filters(
     db: Arc<DatabaseConnection>,
 ) -> impl Filter<Extract = (impl warp::Reply,), Error = warp::Rejection> + Clone {
     let chefs_path = warp::path(base_path).and(warp::path("chefs"));
-    let common = with_db(db.clone()).and(do_auth(db.clone()));
+    let common = with_db(db.clone()).and(do_auth(db));
 
     // region: api paths
 
     // LIST chefs 'GET /chefs/'
 
-    let list = chefs_path
-        .and(warp::get())
-        .and(warp::path::end())
-        .and(common.clone())
-        .and_then(chef_list);
+    // let list = chefs_path
+    //     .and(warp::get())
+    //     .and(warp::path::end())
+    //     .and(common.clone())
+    //     .and_then(chef_list);
 
-    // GET chef 'GET /chefs/1'
+    // GET chef 'GET /chefs'
     let get = chefs_path
         .and(warp::get())
         .and(common.clone())
@@ -61,15 +61,11 @@ pub fn chef_rest_filters(
 
     let get_recipes = chefs_path
         .and(warp::get())
-        .and(common.clone())
+        .and(common)
         .and(warp::path("recipes"))
         .and_then(chef_get_recipes);
 
-    list.or(get_recipes)
-        .or(create)
-        .or(update)
-        .or(delete)
-        .or(get)
+    get_recipes.or(create).or(update).or(delete).or(get)
 
     // endregion: api paths
 }
