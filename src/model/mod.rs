@@ -1,12 +1,12 @@
 use thiserror::Error as ThisError;
 
+mod chef;
 mod db;
 mod recipe;
-mod chef;
 
+pub use chef::{ChefMac, ChefPatch};
 pub use db::init_db;
-pub use recipe::{ RecipeMac, RecipePatch };
-pub use chef::{ ChefMac, ChefPatch };
+pub use recipe::{RecipeMac, RecipePatch};
 
 #[derive(ThisError, Debug)]
 pub enum Error {
@@ -17,11 +17,11 @@ pub enum Error {
     EntityNotFound(String),
 
     #[error(transparent)]
-    SeaOrmError(#[from] sea_orm::DbErr),
+    SeaOrmErr(#[from] sea_orm::DbErr),
 
     #[error(transparent)]
-    IOError(#[from] std::io::Error),
+    IOErr(#[from] std::io::Error),
 
     #[error(transparent)]
-    SqlxError(#[from] sqlx::Error)
+    SqlxErr(#[from] sqlx::Error),
 }

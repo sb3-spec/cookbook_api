@@ -1,19 +1,18 @@
 #![allow(unused)]
 
-use std::{sync::Arc, env};
+use std::{env, sync::Arc};
 
 use model::init_db;
 use web::start_web;
 
 mod entities;
 mod model;
-mod web;
 mod security;
 mod utils;
+mod web;
 
-const DEFAULT_WEB_FOLDER: &'static str = "web-folder/";
+const DEFAULT_WEB_FOLDER: &str = "web-folder/";
 const DEFAULT_WEB_PORT: u16 = 8080;
-
 
 #[tokio::main]
 async fn main() {
@@ -23,7 +22,7 @@ async fn main() {
 
     let web_port: u16 = match env::var("PORT") {
         Ok(port) => port.parse::<u16>().unwrap(),
-        Err(_) => DEFAULT_WEB_PORT
+        Err(_) => DEFAULT_WEB_PORT,
     };
 
     // get the database
@@ -34,6 +33,6 @@ async fn main() {
     // Start the server
     match start_web(&web_folder, web_port, db).await {
         Ok(_) => println!("Server ended"),
-        Err(ex) => println!("ERROR - web server failed to start. Cause {:?}", ex)
+        Err(ex) => println!("ERROR - web server failed to start. Cause {:?}", ex),
     }
 }

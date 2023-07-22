@@ -9,9 +9,9 @@ const SQL_DIR: &str = "sql/";
 const SQL_RECREATE: &str = "sql/00-recreate-db.sql";
 
 pub async fn init_db() -> Result<DatabaseConnection, super::Error> {
-    if false {
-        dotenv().ok().expect("Error reading .env file");
-    }
+    if dotenv().is_ok() {
+        dotenv().unwrap();
+    };
 
     // RESET DB dev only
     if false {
@@ -47,7 +47,7 @@ pub async fn init_db() -> Result<DatabaseConnection, super::Error> {
             if let Some(path) = path.to_str() {
                 // only .sql and not the recreate
                 if path.ends_with(".sql") && path != SQL_RECREATE {
-                    pexec(&sqlx_db, &path).await?;
+                    pexec(&sqlx_db, path).await?;
                 }
             }
         }
@@ -65,10 +65,10 @@ async fn pexec(db: &Pool<Postgres>, file: &str) -> Result<(), sqlx::Error> {
         ex
     })?;
 
-    let sqls: Vec<&str> = content.split(";").collect();
+    let sqls: Vec<&str> = content.split(';').collect();
 
     for sql in sqls {
-        match sqlx::query(&sql).execute(db).await {
+        match sqlx::query(sql).execute(db).await {
             Ok(_) => (),
             Err(ex) => println!("WARNING - pexec - Sql file '{}' FAILED cause: {}", file, ex),
         }
