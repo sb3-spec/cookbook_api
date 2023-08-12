@@ -151,6 +151,8 @@ pub async fn scrape_recipe_content(encoded_url: String) -> Result<Json, warp::Re
                                     .chars()
                                     .filter(|c| c.is_ascii())
                                     .collect::<String>()
+                                    .trim()
+                                    .to_owned()
                             })
                             .collect::<Vec<String>>();
                     }
